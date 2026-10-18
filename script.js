@@ -83,20 +83,33 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ============================================================================
-     2. STICKY HEADER SCROLL EFFECT
-     Adds a subtle shadow and deeper background to the header once scrolled.
+     2. STICKY HEADER & TOP SCROLL PROGRESS INDICATOR
+     Adds a subtle shadow/deeper background to the header and updates the top progress bar.
      ============================================================================ */
-  const handleHeaderScroll = () => {
-    if (!header) return;
-    if (window.scrollY > 30) {
-      header.classList.add('scrolled');
-    } else {
-      header.classList.remove('scrolled');
+  const scrollProgressBar = document.getElementById('scroll-progress');
+
+  const handleScroll = () => {
+    const scrollY = window.scrollY;
+
+    // Sticky header blur & shadow state
+    if (header) {
+      if (scrollY > 30) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    }
+
+    // Top scroll reading progress bar
+    if (scrollProgressBar) {
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progressPercent = docHeight > 0 ? (scrollY / docHeight) * 100 : 0;
+      scrollProgressBar.style.width = `${Math.min(100, Math.max(0, progressPercent))}%`;
     }
   };
 
-  window.addEventListener('scroll', handleHeaderScroll, { passive: true });
-  handleHeaderScroll(); // Run on initial load in case page is refreshed midway
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  handleScroll(); // Run on initial load in case page is refreshed midway
 
   /* ============================================================================
      3. ACTIVE SECTION HIGHLIGHTING (SCROLL SPY)
@@ -126,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('scroll', updateActiveNavLink, { passive: true });
 
   /* ============================================================================
-     4. SCROLL REVEAL ANIMATIONS (Intersection Observer)
+     4. SCROLL REVEAL ANIMATIONS (Intersection Observer with Staggering)
      Reveals sections with smooth fade-in and slide-up as they enter viewport.
      Respects user's prefers-reduced-motion setting.
      ============================================================================ */
@@ -134,6 +147,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const revealElements = document.querySelectorAll('.reveal-on-scroll');
 
   if (!prefersReducedMotion && 'IntersectionObserver' in window) {
+    // Add staggered delay to child cards inside grid containers
+    document.querySelectorAll('.projects-grid, .skills-grid, .about-philosophy-cards').forEach((container) => {
+      Array.from(container.children).forEach((child, idx) => {
+        child.style.setProperty('--reveal-delay', `${(idx % 4) * 0.1}s`);
+      });
+    });
+
     const revealObserver = new IntersectionObserver(
       (entries, observer) => {
         entries.forEach((entry) => {
@@ -157,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ============================================================================
-     5. PROJECT CATEGORY FILTERING
+     5. PROJECT CATEGORY FILTERING (With Smooth Card Entrance Animation)
      Filters projects based on the 'data-category' attribute.
      ============================================================================ */
   const filterButtons = document.querySelectorAll('.filter-btn');
@@ -176,17 +196,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const selectedFilter = btn.getAttribute('data-filter');
 
-        // Filter cards smoothly
+        // Filter cards smoothly with animation
         projectCards.forEach((card) => {
           const cardCategory = card.getAttribute('data-category');
           const shouldShow = selectedFilter === 'all' || cardCategory === selectedFilter;
 
           if (shouldShow) {
             card.classList.remove('is-hidden');
+            card.classList.remove('filter-animating');
+            // Force DOM reflow to restart CSS keyframe animation
+            void card.offsetWidth;
+            card.classList.add('filter-animating');
           } else {
             card.classList.add('is-hidden');
+            card.classList.remove('filter-animating');
           }
         });
+      });
+    });
+  }
+
+  /* ============================================================================
+     5.5 INTERACTIVE 3D CARD TILT & CURSOR SPOTLIGHT
+     Applies high-end 3D perspective tilt and dynamic cursor light reflection.
+     Enabled only on desktop/laptop pointers and respects reduced motion.
+     ============================================================================ */
+  if (!prefersReducedMotion && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    const interactiveCards = document.querySelectorAll('.project-card, .visual-card');
+
+    interactiveCards.forEach((card) => {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+
+        const rotateX = ((y - centerY) / centerY) * -5.5; // Max 5.5deg
+        const rotateY = ((x - centerX) / centerX) * 5.5;
+
+        // Apply smooth 3D tilt without disrupting existing translateY
+        card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-5px)`;
+
+        // Set spotlight coordinates for glare pseudo-element
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+      });
+
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = '';
+        card.style.removeProperty('--mouse-x');
+        card.style.removeProperty('--mouse-y');
       });
     });
   }
