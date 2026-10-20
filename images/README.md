@@ -8,7 +8,7 @@ This folder is intended for your personal images and project screenshots.
    - Recommended size: 400x400px (square) or 500x500px.
    - Already configured in `index.html` inside `.profile-avatar`:
      ```html
-     <img src="images/profile.jpg" alt="Naflan" class="avatar-img" style="width: 100%; height: 100%; object-fit: cover; border-radius: inherit;">
+     <img src="images/profile.jpg" alt="Mohamed Naflan" class="avatar-img" style="width: 100%; height: 100%; object-fit: cover; border-radius: inherit;">
      ```
    - Simply replace `profile.jpg` with your own photo anytime!
 
