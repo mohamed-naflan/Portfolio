@@ -445,4 +445,58 @@ document.addEventListener('DOMContentLoaded', () => {
     yearElement.textContent = new Date().getFullYear();
   }
 
+  /* ============================================================================
+     9. HERO CIRCULAR AVATAR & BUBBLES INTERACTIVE MICRO-PARALLAX
+     Adds subtle cursor-guided 3D tilt tracking and interactive bubble reactions.
+     ============================================================================ */
+  const circleWrapper = document.getElementById('profile-circle-wrapper');
+  if (circleWrapper) {
+    const frame = circleWrapper.querySelector('.profile-circle-frame');
+    const bubbles = circleWrapper.querySelectorAll('.bubble');
+
+    circleWrapper.addEventListener('mousemove', (e) => {
+      const rect = circleWrapper.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+
+      const tiltX = (y / (rect.height / 2)) * -7;
+      const tiltY = (x / (rect.width / 2)) * 7;
+
+      if (frame) {
+        frame.style.transform = `perspective(800px) rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg) scale(1.03)`;
+      }
+    });
+
+    circleWrapper.addEventListener('mouseleave', () => {
+      if (frame) {
+        frame.style.transform = '';
+      }
+    });
+
+    // Interactive bubble click/tap animation
+    bubbles.forEach((bubble) => {
+      bubble.style.cursor = 'pointer';
+      bubble.setAttribute('tabindex', '0');
+      bubble.setAttribute('role', 'button');
+      bubble.setAttribute('aria-label', 'Interactive bubble');
+
+      const popEffect = () => {
+        bubble.style.transform = 'scale(1.35)';
+        bubble.style.filter = 'brightness(1.6) drop-shadow(0 0 10px rgba(99, 102, 241, 0.8))';
+        setTimeout(() => {
+          bubble.style.transform = '';
+          bubble.style.filter = '';
+        }, 320);
+      };
+
+      bubble.addEventListener('click', popEffect);
+      bubble.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          popEffect();
+        }
+      });
+    });
+  }
+
 });
