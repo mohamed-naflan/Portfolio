@@ -1,6 +1,6 @@
 /**
  * ==============================================================================
- * NAFLAN - PORTFOLIO JAVASCRIPT (ES6+)
+ * MOHAMED NAFLAN - PORTFOLIO JAVASCRIPT (ES6+)
  * ==============================================================================
  * Clean, lightweight, modular vanilla JavaScript.
  * No external libraries or build tools required.
